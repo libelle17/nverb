@@ -1153,13 +1153,12 @@ End Sub ' machtTask2
 
 Sub machAufgb(tName$, AName$, CdL$, ByVal flags&, MRT&, Prio&, WD$, Comment$, ByVal Creator$, BegD As Date, i1&, i2&, I3&, Itv&, Dur&, StartT As Date, EndD As Date, TFlags As TriggerFlags, TriggerType As TriggerTypes, Optional Stat As JobStatus = 267008, Optional alsAdm%, Optional args$, Optional obAdm%, Optional obletztes%) ' TaskReady = 267008
  On Error GoTo fehler
- Const p1$ = "so"
  If WD = "" Then WD = ProgVerz
  If WV < win_vista Then
   xpmachTask tName, AName, CdL, flags, MRT, Prio, WD, Comment, Creator, BegD, i1, i2, I3, Itv, Dur, StartT, EndD, TFlags, TriggerType, Stat       ' TaskReady = 267008
 '  domTgeht
  Else
- ' "Turbomed Ausfallwarnung", ProgVerz & "poetaktiv.exe", "", "administrator", p1 & ap2
+ ' "Turbomed Ausfallwarnung", ProgVerz & "poetaktiv.exe", "", "administrator", AdminPwd
   w10machTask tName, AName, CdL, flags, MRT, Prio, WD, Comment, IIf(alsAdm, "Administrator", Creator), BegD, i1, i2, I3, Itv, Dur, StartT, EndD, TFlags, TriggerType, Stat, args, obAdm, obletztes ' TaskReady = 267008
  End If
  Exit Sub
@@ -1255,7 +1254,7 @@ Sub w10machTask(tName$, AName$, CdL$, ByVal flags&, MRT&, Prio&, WD$, Comment$, 
   cmd = cmd & "schtasks /query /tn """ & tName & """ >nul && schtasks /delete /tn """ & tName & """ /f "
  End If
  cmd = IIf(cmd = "", "", cmd & " & ")
- cmd = cmd & "schtasks /query /tn """ & tName & """ >NUL 2>&1 || schtasks /create /xml """ & Verz & "\" & tName & """ /tn """ & tName & """ /ru " & IIf(obAdm, "administrator /rp " & p1 & ap2, "system")
+ cmd = cmd & "schtasks /query /tn """ & tName & """ >NUL 2>&1 || schtasks /create /xml """ & Verz & "\" & tName & """ /tn """ & tName & """ /ru " & IIf(obAdm, "administrator /rp " & AdminPwd, "system")
  If obletztes Then
   Dim obforce%
   obforce = True
@@ -1266,12 +1265,12 @@ Sub w10machTask(tName$, AName$, CdL$, ByVal flags&, MRT&, Prio&, WD$, Comment$, 
 '   rerg = fragReg(2, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree\" & tName, "Id")
 '   If rerg <> "" Then
 '  If FSO.FileExists("c:\windows\system32\tasks\" & tName) Then
-'    rufauf "cmd", "/c schtasks /query /tn """ & tName & """ >NUL 2>&1 || schtasks /create /xml """ & Verz & "\" & tName & """ /tn """ & tName & """ /ru " & IIf(obAdm, "administrator /rp " & p1 & ap2, "system"), 1, , -1, 0
+'    rufauf "cmd", "/c schtasks /query /tn """ & tName & """ >NUL 2>&1 || schtasks /create /xml """ & Verz & "\" & tName & """ /tn """ & tName & """ /ru " & IIf(obAdm, "administrator /rp " & AdminPwd, "system"), 1, , -1, 0
 '   End If ' rerg<>""
 '  Else
-'   rufauf "cmd", "/c schtasks /query /tn """ & tName & """ >nul && schtasks /delete /tn """ & tName & """ /f & schtasks /query /tn """ & tName & """ >NUL 2>&1 || schtasks /create /xml """ & Verz & "\" & tName & """ /tn """ & tName & """ /ru " & IIf(obAdm, "administrator /rp " & p1 & ap2, "system"), 2, , 0, 0
+'   rufauf "cmd", "/c schtasks /query /tn """ & tName & """ >nul && schtasks /delete /tn """ & tName & """ /f & schtasks /query /tn """ & tName & """ >NUL 2>&1 || schtasks /create /xml """ & Verz & "\" & tName & """ /tn """ & tName & """ /ru " & IIf(obAdm, "administrator /rp " & AdminPwd, "system"), 2, , 0, 0
 '   rufauf "cmd", "/c schtasks /query /tn """ & tName & """ >nul && schtasks /delete /tn """ & tName & """ /f", 2, , 0, 0
-'   rufauf "cmd", "/c schtasks /query /tn """ & tName & """ >NUL 2>&1 || schtasks /create /xml """ & Verz & "\" & tName & """ /tn """ & tName & """ /ru " & IIf(obAdm, "administrator /rp " & p1 & ap2, "system"), 2, , -1, 0
+'   rufauf "cmd", "/c schtasks /query /tn """ & tName & """ >NUL 2>&1 || schtasks /create /xml """ & Verz & "\" & tName & """ /tn """ & tName & """ /ru " & IIf(obAdm, "administrator /rp " & AdminPwd, "system"), 2, , -1, 0
 '  End If ' obforce
 ' End If ' mitLoe
 ' rufauf "cmd", "/c schtasks /query /tn """ & tName & """ >%appdata%\erg0.txt 2>&1", 0, , -1, 0
@@ -1284,7 +1283,7 @@ Sub w10machTask(tName$, AName$, CdL$, ByVal flags&, MRT&, Prio&, WD$, Comment$, 
 '  End If
 ' End If
 ' rufauf "cmd", "/c schtasks /query /tn """ & tName & """ >%appdata%\erg2.txt 2>&1", 0, , -1, 0
-' rufauf "cmd", "/c schtasks /create /xml """ & Verz & "\" & tName & """ /tn """ & tName & """ /ru " & IIf(obAdm, "administrator /rp " & p1 & ap2, "system"), 2, , -1, 0
+' rufauf "cmd", "/c schtasks /create /xml """ & Verz & "\" & tName & """ /tn """ & tName & """ /ru " & IIf(obAdm, "administrator /rp " & AdminPwd, "system"), 2, , -1, 0
  Exit Sub ' w10machTask
 fehler:
 Select Case MsgBox("FNr: " + CStr(Err.Number) + vbCrLf + "LastDLLError: " + CStr(Err.LastDllError) + vbCrLf + "Source: " + IIf(IsNull(Err.source), "", CStr(Err.source)) + vbCrLf + "Description: " + Err.Description + vbCrLf + "Fehlerposition: " + CStr(FPos), vbAbortRetryIgnore, "Aufgefangener Fehler in w10machTask/" + App.Path)
@@ -1328,7 +1327,6 @@ Sub xpmachTask(tName$, AName$, CdL$, ByVal flags&, MRT&, Prio&, WD$, Comment$, B
  Dim oTask As Task, uName$, gname As New CString
  Static Fehlerzahl&, pwd$
  Static Sc As New TaskScheduler2.Schedule, scinit%
- Const p1$ = "so"
  On Error GoTo fehler
  If Not scinit Then
   On Error Resume Next
@@ -1403,7 +1401,7 @@ Sub xpmachTask(tName$, AName$, CdL$, ByVal flags&, MRT&, Prio&, WD$, Comment$, B
     End With
     ' Set the account in which the
     ' application will run
-    If InStrB(uName, "schade") <> 0 Or InStrB(uName, "gerald") <> 0 Then pwd = "scar" & "l17" Else pwd = "" & p1 & ap2
+    If InStrB(uName, "schade") <> 0 Or InStrB(uName, "gerald") <> 0 Then pwd = holap(uName) Else pwd = AdminPwd
 '    .SetAccountInfo uname, vbNullString
     .SetAccountInfo LCase$(uName), pwd
     ' Save the task
@@ -1539,7 +1537,7 @@ If ErrNumber = 429 Then
 '  SuSh "regsvr32.exe " & """" & FS & """", 2, , 0
   rufauf "regsvr32", """" & FS & """", 2, , 0, 0
  Else
-'  ShellaW doalsad & acceu & ap1 & ap2 & " cmd /e:on /c regsvr32 " & Chr$(34) & FS & Chr$(34), vbHide, , 100000
+'  ShellaW doalsad & acceu & AdminGes & " cmd /e:on /c regsvr32 " & Chr$(34) & FS & Chr$(34), vbHide, , 100000
 '  SuSh "cmd /e:on /c regsvr32 " & Chr$(34) & FS & Chr$(34), 1, , 0
   rufauf "cmd", "/e:on /c regsvr32 """ & FS & """", 2, , 0, 0
  End If
@@ -1707,8 +1705,9 @@ Function Tasks()
 #End If
  End Select
  KWn "poetaktiv.exe", uVerz & "Programmierung\poetaktiv", ProgVerz
+ KWn "Expaufruf.exe", uVerz & "Programmierung\ExpAufruf", ProgVerz
  machAufgb "Turbomed Ausfallwarnung", ProgVerz & "poetaktiv.exe", "", 8193, 1800000, 32, ProgVerz, "", uName, #9/2/2015#, 1, 0, 0, 2, 1439, #12:01:00 AM#, #11/30/1999#, 0, 1, 267008, True, "", False
-' rufauf "cmd", "/c schtasks /query /tn ""Turbomed toeten"" >NUL 2>&1 || schtasks /create /ru administrator /rp sonne13 /sc minute /tn ""Turbomed toeten"" /tr ""cmd /c 'if not exist \\virtwin\turbomed\lauf taskkill /im turbomed.exe /t /f'""", True
+' rufauf "cmd", "/c schtasks /query /tn ""Turbomed toeten"" >NUL 2>&1 || schtasks /create /ru administrator /rp " & AdminPwd & " /sc minute /tn ""Turbomed toeten"" /tr ""cmd /c 'if not exist \\virtwin\turbomed\lauf taskkill /im turbomed.exe /t /f'""", True
  machAufgb "Turbomed töten", "cmd", "", 8193, 1800000, 1, "", "Turbomed für Backup beenden", uName, #10/13/2021#, 1, 0, 0, 1, 1439, #12:02:00 AM#, #11/30/1999#, 0, 1, 267008, True, "/c ""if exist \\linux1\turbomed\lau findstr /c:Mehrplatzbetrieb={ja} c:\turbomed\programm\local.ini >Nul 2>&amp;1 &amp;&amp; taskkill /im turbomed.exe /t /f""", True, True
  Exit Function
  ' On Error Resume Next
@@ -1739,7 +1738,7 @@ If ErrNumber = 429 Then
 '  SuSh "regsvr32.exe " & """" & FS & """", , , 0
   rufauf "regsvr32", """" & FS & """", , , 0, 0
  Else
-'  ShellaW doalsad & acceu & ap1 & ap2 & " cmd /e:on /c regsvr32 " & Chr$(34) & FS & Chr$(34), vbHide, , 100000
+'  ShellaW doalsad & acceu & AdminGes & " cmd /e:on /c regsvr32 " & Chr$(34) & FS & Chr$(34), vbHide, , 100000
 '  SuSh "cmd /e:on /c regsvr32 " & Chr$(34) & FS & Chr$(34), 1, , 0
    rufauf "cmd", "/e:on /c regsvr32 """ & FS & """", 2, , 0, 0
  End If
@@ -2118,15 +2117,15 @@ Function WNetSetz()
   ' führt zur net use-Ausgabe: "Nicht verfgb"
   #Const ShellaW = False
   #If ShellaW Then
-  ShellaW doalsAd & acceu & ap1 & ap2 & " net use p: " & Chr$(34) & PatDok & Chr$(34) & " " & ap1 & ap2 & " /user:sturm /persistent:yes"
-  ShellaW doalsAd & acceu & ap1 & ap2 & " net use u: " & Chr$(34) & EigDat & Chr$(34) & " " & ap1 & ap2 & " /user:sturm /persistent:yes"
-  rufauf "cmd", "/c net use u: """ & EigDat & """ """ & ap1 & ap2 & """ /user:sturm /persistent:yes", 2, 0, -1, 0
-  ShellaW doalsAd & acceu & ap1 & ap2 & " net use v: " & Chr$(34) & Down & Chr$(34) & " " & ap1 & ap2 & " /user:sturm /persistent:yes"
-  ShellaW doalsAd & acceu & ap1 & ap2 & " net use x: " & Chr$(34) & TMStammV & Chr$(34) & " " & ap1 & ap2 & " /user:sturm /persistent:yes"
-  ShellaW doalsAd & acceu & ap1 & ap2 & " net use y: " & Chr$(34) & Programme & Chr$(34) & " " & ap1 & ap2 & " /user:sturm /persistent:yes"
-  ShellaW doalsAd & acceu & ap1 & ap2 & " net use s: " & Chr$(34) & Kothny & Chr$(34) & " " & ap1 & ap2 & " /user:sturm /persistent:yes"
-  ShellaW doalsAd & acceu & ap1 & ap2 & " net use t: " & Chr$(34) & Gerald & Chr$(34) & " " & ap1 & ap2 & " /user:sturm /persistent:yes"
-  ShellaW doalsAd & acceu & ap1 & ap2 & " net use r: " & Chr$(34) & ReadO & Chr$(34) & " " & ap1 & ap2 & " /user:sturm /persistent:yes"
+  ShellaW doalsAd & acceu & AdminGes & " net use p: " & Chr$(34) & PatDok & Chr$(34) & " " & AdminGes & " /user:sturm /persistent:yes"
+  ShellaW doalsAd & acceu & AdminGes & " net use u: " & Chr$(34) & EigDat & Chr$(34) & " " & AdminGes & " /user:sturm /persistent:yes"
+  rufauf "cmd", "/c net use u: """ & EigDat & """ """ & AdminGes & """ /user:sturm /persistent:yes", 2, 0, -1, 0
+  ShellaW doalsAd & acceu & AdminGes & " net use v: " & Chr$(34) & Down & Chr$(34) & " " & AdminGes & " /user:sturm /persistent:yes"
+  ShellaW doalsAd & acceu & AdminGes & " net use x: " & Chr$(34) & TMStammV & Chr$(34) & " " & AdminGes & " /user:sturm /persistent:yes"
+  ShellaW doalsAd & acceu & AdminGes & " net use y: " & Chr$(34) & Programme & Chr$(34) & " " & AdminGes & " /user:sturm /persistent:yes"
+  ShellaW doalsAd & acceu & AdminGes & " net use s: " & Chr$(34) & Kothny & Chr$(34) & " " & AdminGes & " /user:sturm /persistent:yes"
+  ShellaW doalsAd & acceu & AdminGes & " net use t: " & Chr$(34) & Gerald & Chr$(34) & " " & AdminGes & " /user:sturm /persistent:yes"
+  ShellaW doalsAd & acceu & AdminGes & " net use r: " & Chr$(34) & ReadO & Chr$(34) & " " & AdminGes & " /user:sturm /persistent:yes"
   #End If
  End If
  Exit Function
@@ -2153,8 +2152,8 @@ Function Links()
  KWn "Accu-Chek Smart Pix Software.lnk", pDatenb & "\Roche Diagnostics\Accu-Chek Smart Pix Software", Favor
  KWn "EDV-Anleitungen.doc.lnk", uVerz, Favor
  KWn "Merkblatt Fußsyndrom.doc.lnk", uVerz, Favor
- KWn "Onlinebefunde Labor Staber 1Mad48 So" & "nne2012!.url", Gerald, Favor
- KWn "Clarity GSchade Zucker19_.url", Gerald, Favor
+ KWn "Onlinebefunde Labor Staber LS1Mad48.url", Gerald, Favor
+ KWn "Clarity GSchade.url", Gerald, Favor
  KWn "Diabetes seit.lnk", "U:\programmierung\VS08\Projects\DiabDauer\Release", Favor
  If WV < win_vista Then KWn "Bootmenü.exe", uVerz & "Programmierung\Partitionen", StartMen
  KWn "BE-Berechnung.lnk", uVerz & "dm", Favor
@@ -2248,7 +2247,16 @@ Sub Main()
  On Error GoTo fehler
 ' aktfi.Show
  If True Then
-
+' Do While True
+' cReg.ClassKey = HKEY_LOCAL_MACHINE
+' cReg.SectionKey = "SOFTWARE\Classes\oeffneverz"
+' cReg.CreateKey
+' Schlüssel, um vom PLZ aus den Explorer mit den Dateien des Patienten öffnen zu können
+ Call cReg.WriteKey("Open Folder Protocol", "", "SOFTWARE\Classes\oeffneverz", HKEY_LOCAL_MACHINE)
+ Call cReg.WriteKey(" ", "URL Protocol", "SOFTWARE\Classes\oeffneverz", HKEY_LOCAL_MACHINE)
+ Call cReg.WriteKey("Open Folder", "", "SOFTWARE\Classes\oeffneverz\shell\open", HKEY_LOCAL_MACHINE)
+ Call cReg.WriteKey("cmd /c set url=%1 & call set url=%%url:oeffneverz:=%% & call start explorer p:\dok\%%url%%", "", "SOFTWARE\Classes\oeffneverz\shell\open\command", HKEY_LOCAL_MACHINE)
+' Loop
 ' oEnvSystem.Environment("NVerb") = "1"
  ' fi.Show
  ' fi.Stand = "1.Beginn"
@@ -2257,12 +2265,14 @@ Sub Main()
  pDatenb = pVerz & "datenbanken"
  Call StartBen("1")
  meßzeit
-#If obdebug Then
+#If obDebug Then
  Debug.Assert sayifisIDE
 #End If
  FPos = 0
  If WV < win_vista Then RegOrt = HLM Else RegOrt = HCU
  Dim läuftschon%
+ AdminPwd = holap("Administrator")
+ AdminGes = "-u administrator -p " & AdminPwd
  läuftschon = fWertLesen(RegOrt, "SOFTWARE\GSProducts", "NVerb")
 ' test = GetReg(1, "AppEvents\Schemes\Apps\.Default\SystemExit\.Current", vns)
  Call fDWSpei(RegOrt, "SOFTWARE\GSProducts", "NVerb", 1)
@@ -2295,15 +2305,16 @@ Sub Main()
  Call StartBen("3a1")
  DoEvents
  On Error Resume Next
-' Call SuSh("cmd /c net use p: " & PatDok & " " & ap1 & ap2 & " /user:sturm & dir p:\eingelesen\2015 > c:\protokoll.txt", 1, , 5000000)
-' Call SuSh("cmd / c net use p: || net use p: " & PatDok & " " & ap1 & ap2 & " /user:sturm")
+' Call SuSh("cmd /c net use p: " & PatDok & " " & AdminGes & " /user:sturm & dir p:\eingelesen\2015 > c:\protokoll.txt", 1, , 5000000)
+' Call SuSh("cmd / c net use p: || net use p: " & PatDok & " " & AdminGes & " /user:sturm")
 ' Dim nr As NETRESOURCE
-'  ShellaW doalsad & acceu & ap1 & ap2 & " net use p: " & Chr$(34) & PatDok & Chr$(34) & " " & ap1 & ap2 & " /user:sturm /persistent:yes"
-'   SuSh "cmd /c " & Chr$(34) & "net use p: " & PatDok & " " & ap1 & ap2 & " /user:sturm /persistent:yes" & Chr$(34), 1, , 0, 1
+'  ShellaW doalsad & acceu & AdminGes & " net use p: " & Chr$(34) & PatDok & Chr$(34) & " " & AdminGes & " /user:sturm /persistent:yes"
+'   SuSh "cmd /c " & Chr$(34) & "net use p: " & PatDok & " " & AdminGes & " /user:sturm /persistent:yes" & Chr$(34), 1, , 0, 1
 '   SuSh "net use p: /delete", 1, , 0, 1
-'   SuSh "\\linux1\daten\down\pstools\psexec -u anmeldr1\administrator -p sonne net use p: \\linux1\daten\patientendokumente sonne /user:sturm /persistent:yes", 0, , 0, 1
+'   SuSh "\\linux1\daten\down\pstools\psexec -u anmeldr1\administrator -p " & adminpwd & " net use p: \\linux1\daten\patientendokumente " & adminpwd & " /user:sturm /persistent:yes", 0, , 0, 1
 #If demo Then
-   SuSh "cmd /c net use p: \\linux1\daten\patientendokumente sonne /user:sturm & cmd", 1, , 0, 1
+   SturmPwd = holap("Sturm")
+   SuSh "cmd /c net use p: \\linux1\daten\patientendokumente " & SturmPwd & " /user:sturm & cmd", 1, , 0, 1
 #End If
 ' Call SuSh("cmd /c md " & Chr$(34) & "p:\unsinn" & Chr$(34), 1, , 500, 0)
 ' Call SuSh("cmd /c ren Arztsuche.lnk Aerztsuche.lnk")
@@ -2314,7 +2325,7 @@ Sub Main()
 '  SuSh "ipconfig /flushdns", 3, , 0
   rufauf "ipconfig", "/flushdns", , , , 0, 1
 ' End If
-' Call aktfi.fuehraus(doalsad, acceu & ap1 & ap2 & " ipconfig /flushdns")
+' Call aktfi.fuehraus(doalsad, acceu & AdminGes & " ipconfig /flushdns")
  On Error GoTo fehler
  Call StartBen("3a3")
  FPos = 15
@@ -2493,6 +2504,7 @@ Sub Main()
   oReg.SectionKey = "SOFTWARE\OneTouch"
   oReg.ValueKey = "DBPath"
   Debug.Print oReg.Value
+  
   
   Call AnheftNachVerz("One Touch (Lifescan)", ProgVerz & "LifeScan\OneTouchDMSPro\Bin", "DMPro.exe")
  End If
@@ -2883,7 +2895,7 @@ Function RegManip1&()
  If POk Then Print #19, "Computer: " + CStr(Cpt) + ", Betriebssystem: " + CStr(WV) + ", Benutzer: " + CStr(UN) + ", Pfad: " + App.Path
  If POk Then Print #19, "0b: " + CStr(Now)
  
- Call fDWSpei(HCU, "Software\Microsoft\Windows\CurrentVersion\Explorer", "AltTabSettings", 1)
+ Call fDWSpei(HCU, "Software\Microsoft\Windows\CurrentVersion\Explorer", "AltTabSettings", 0) ' geändert 8.9.25, statt 1
  Call fDWSpei(HCU, "Control Panel\Desktop", "CoolSwitchColumns", 10)
  Call fDWSpei(HCU, "Control Panel\Desktop", "CoolSwitchRows", 10)
 ' Call fDWSpei(HCU, "Software\Microsoft\Windows\CurrentVersion\Explorer\AltTab", "Columns", 12)
@@ -2988,7 +3000,7 @@ Function fGDT(TMPath$)
    On Error Resume Next
     Name GDT As gdr
     If Err.Number <> 0 Then
-      'ShellaW doalsad & acceu & ap1 & ap2 & " cmd /e:on /c ren " & Chr$(34) & gdt & Chr$(34) & " " & Chr$(34) & gdrd & Chr$(34), vbHide, , 10000
+      'ShellaW doalsad & acceu & AdminGes & " cmd /e:on /c ren " & Chr$(34) & gdt & Chr$(34) & " " & Chr$(34) & gdrd & Chr$(34), vbHide, , 10000
 '      SuSh "cmd /e:on /c ren " & Chr$(34) & GDT & Chr$(34) & " " & Chr(34) & Chr$(34) & gdrd & Chr$(34), 1, , 0
        rufauf "cmd", "/e:on /c ren """ & GDT & """ """ & gdrd & """", 2, , , 0
     End If
@@ -3429,7 +3441,7 @@ Sub KWn(D$, ByVal v1$, ByVal v2$) ' Kopiere wenn neuer
      Result = GetShortPathName(v2, AA, Len(AA))
      If Result = 0 Then
 '      Shell "runas /user:administrator ""cmd /c md """ & v2 & """ "" "
-'      ShellaW doalsad & acceu & ap1 & ap2 & " cmd /e:on /c md """ & v2 & """", vbHide, , 10000
+'      ShellaW doalsad & acceu & AdminGes & " cmd /e:on /c md """ & v2 & """", vbHide, , 10000
 '      SuSh "cmd /e:on /c md """ & v2 & """", 1, , 0
        rufauf "cmd", "/e:on /c md """ & v2 & """", 2, , , 0
       AA = Space$(255)
@@ -3533,7 +3545,7 @@ Sub AnheftNachVerz(Link$, Verz$, Anw$, Optional AusfInPf$, Optional arg$)
 ''    ShellaW "xcopy /d \\linux1\daten\down\lnk_parser_cmd.exe " & Chr$(34) & userprof & Chr$(34), vbNormalFocus, , 1000000
 '    SuSh "xcopy /d \\linux1\daten\down\lnk_parser_cmd.exe " & Chr$(34) & userprof & Chr$(34), 1
 '   End If
-''   ergn = ShellaW(doalsad & acceu & ap1 & ap2 & " cmd /e:on /c " & userprof & "\lnk_parser_cmd.exe " & Chr$(34) & Linkdatei & Chr$(34) & " > " & Chr$(34) & Linkdatei & ".txt" & Chr$(34), vbHide, , 10000)
+''   ergn = ShellaW(doalsad & acceu & AdminGes & " cmd /e:on /c " & userprof & "\lnk_parser_cmd.exe " & Chr$(34) & Linkdatei & Chr$(34) & " > " & Chr$(34) & Linkdatei & ".txt" & Chr$(34), vbHide, , 10000)
 '   ergn = SuSh("cmd /c cd " & Chr$(34) & userprof & Chr$(34) & " & " & "lnk_parser_cmd.exe " & Chr$(34) & Linkdatei & Chr$(34) & " > " & Chr$(34) & Linkdatei & ".txt" & Chr$(34), 1, Chr$(34) & userprof & Chr$(34), , 1)
 '   ergn = SuSh("cd " & Chr$(34) & userprof & Chr$(34) & " & " & "lnk_parser_cmd.exe " & Chr$(34) & Linkdatei & Chr$(34) & " > " & Chr$(34) & Linkdatei & ".txt" & Chr$(34), 1, Chr$(34) & userprof & Chr$(34), , 1)
 '   ergn = SuSh(" -w " & Chr$(34) & userprof & Chr$(34) & " " & Chr$(34) & userprof & "lnk_parser_cmd.exe " & Chr$(34) & " " & Chr$(34) & Linkdatei & Chr$(34) & " >> " & Chr$(34) & Linkdatei & ".txt" & Chr$(34), 1, Chr$(34) & userprof & Chr$(34), 0)
@@ -3556,7 +3568,7 @@ Sub AnheftNachVerz(Link$, Verz$, Anw$, Optional AusfInPf$, Optional arg$)
   End If
   If Not gibts Then
    If LinkErstellen(Link, AppVerz, Anw, Verz, AusfInPf, arg) Then
-'   ShellaW doalsad & acceu & ap1 & ap2 & " cmd /e:on /c move " & Chr$(34) & userprof & "\Desktop\" & Link & ".lnk" & Chr$(34) & " " & Chr$(34) & Verz & "\" & Chr$(34), vbHide, , 10000
+'   ShellaW doalsad & acceu & AdminGes & " cmd /e:on /c move " & Chr$(34) & userprof & "\Desktop\" & Link & ".lnk" & Chr$(34) & " " & Chr$(34) & Verz & "\" & Chr$(34), vbHide, , 10000
     Do While Not FileExists(AppVerz & "\" & Link & ".lnk")
     Loop
     Do While FileLen(AppVerz & "\" & Link & ".lnk") = 0
@@ -4172,6 +4184,7 @@ Function getTMExeV$(Optional idt As TMIniDatei)
 ' 10.4.20: gibts offenbar nicht mehr
 ' Call idt.SetProp("Sonstiges", "TurboMed.net: Intervall Einwahl-Verbindungsprüfung in Minuten (0:deaktiviert)", "0")
 ' Call idt.SetProp("Sonstiges", "TurboMed.net: Intervall Router-Verbindungsprüfung in Minuten (0:deaktiviert)", "0")
+ Call idt.SetProp("Sonstiges", "Neues Hauptmenü aktivieren", "nein")
  If obSchottdorf Or obStaber Then
   Call idt.SetProp("Laborimport", "Standard-Pfad zu Laborimportdateien", "\\linux1\turbomed\Labor\labor.dat") ' TMStammV + "\Labor\labor.dat")
   Call idt.SetProp("Laborimport", "Sollen in allen Laborunterverzeichnissen Wochentagsordner angelegt werden?", "ja")
@@ -4788,9 +4801,9 @@ Function TurbomedHerricht()
 ' If LenB(erg) = 0 Then MkDir (verz1)
  If FileExists(verz1) Then Kill verz1
  If Not DirExists(verz1) Then MkDir verz1
-' Call Shareadd("\\" & Cpt, verz0, "ifapwin", "Ifap Arzneimittelindex auf " & Cpt, "" & ap1 & "nne")
-' Call Shareadd("\\" & Cpt, verz1, "ifapwin", "Ifap Arzneimittelindex auf " & Cpt, "" & ap1 & "nne")
- Call Shareadd("\\" & Cpt, lokalTMExeV, "Turbomed", "Turbomed auf " & Cpt, "" & ap1 & "nne")
+' Call Shareadd("\\" & Cpt, verz0, "ifapwin", "Ifap Arzneimittelindex auf " & Cpt, "" & AdminGes)
+' Call Shareadd("\\" & Cpt, verz1, "ifapwin", "Ifap Arzneimittelindex auf " & Cpt, "" & AdminGes)
+ Call Shareadd("\\" & Cpt, lokalTMExeV, "Turbomed", "Turbomed auf " & Cpt, "" & AdminGes)
 ' KWn "Praxisstruktur.xml", TMStammV & "\Lizenz", lokalTMExeV & "\lizenz"
 ' Dim f1 As New Form1
 ' Call f1.ShareAdd("\\" & Cpt, verz0, "ifapwin", "Ifap Arzneimittelindex auf " & Cpt, "")

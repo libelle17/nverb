@@ -132,4 +132,3 @@ Select Case MsgBox("FNr: " & FNr & ", ErrNr: " & CStr(ErrNumber) & vbCrLf & "Las
  Case vbIgnore: Call MsgBox("Setze fort"): Resume Next
 End Select
 End Function ' GetReg
-

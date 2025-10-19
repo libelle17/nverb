@@ -107,7 +107,7 @@ Function Shareadd&(ByVal Server$, ByVal FreigabePfad$, ByVal FreigabeName$, Opti
  Else ' win_ver < vista
   If Not gabsschon Then
    If Right(FreigabePfad, 1) = "\" Then FreigabePfad = Left(FreigabePfad, Len(FreigabePfad) - 1)
-'   erg = Not Shell(doalsad & acceu & ap1 & ap2 & " cmd /c net share " & FreigabeName & "=" & Chr$(34) & FreigabePfad & Chr$(34) & " /unlimited /remark:" & Chr$(34) & Remark & Chr$(34))
+'   erg = Not Shell(doalsad & acceu & AdminGes & " cmd /c net share " & FreigabeName & "=" & Chr$(34) & FreigabePfad & Chr$(34) & " /unlimited /remark:" & Chr$(34) & Remark & Chr$(34))
 '   erg = Not SuSh("cmd /c net share " & FreigabeName & "=" & Chr$(34) & FreigabePfad & Chr$(34) & " /unlimited /remark:" & Chr$(34) & Remark & Chr$(34), 2)
    erg = rufauf("cmd", "/c net share " & FreigabeName & "=""" & FreigabePfad & """ /unlimited /remark:""" & Remark & """", 2, , , 0)
   End If
