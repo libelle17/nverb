@@ -2879,6 +2879,7 @@ Sub FcEnsureViewTemplate()
  Call FcIniSetKey(inhalt, "MainPanel", "RightSortColumn", "0,9,0,2")
  Call FcIniSetKey(inhalt, "MainPanel", "LeftDetailsProfile", "fc_default_view")
  Call FcIniSetKey(inhalt, "MainPanel", "RightDetailsProfile", "fc_default_view")
+ Call FcIniSetKey(inhalt, "Form", "SortDirAlwaysOnEnd", "1") ' Dateien vor Ordnern
  Call FcIniSetKey(inhalt, "FcDetailedViews", "1", "fc_default_view")
  Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "LoadShellTitle", "1")
  Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "Condition", "")
