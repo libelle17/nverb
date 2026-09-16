@@ -2807,6 +2807,35 @@ Sub FcIniSetKey(ByRef inhalt$, section$, Schluessel$, wert$)
  inhalt = Join(neu, vbCrLf)
 End Sub ' FcIniSetKey
 
+' Liest einen Schluesselwert aus einem im Speicher gehaltenen ini-Text (Gegenstueck zu FcIniSetKey).
+Function FcIniGetKey$(inhalt$, section$, Schluessel$)
+ Dim zeilen() As String
+ zeilen = Split(inhalt, vbCrLf)
+ Dim i&, secStart&, secEnd&
+ secStart = -1
+ For i = 0 To UBound(zeilen)
+  If Trim$(zeilen(i)) = "[" & section & "]" Then
+   secStart = i
+   secEnd = UBound(zeilen)
+   Dim j&
+   For j = i + 1 To UBound(zeilen)
+    If left$(Trim$(zeilen(j)), 1) = "[" Then
+     secEnd = j - 1
+     Exit For
+    End If
+   Next j
+   Exit For
+  End If
+ Next i
+ If secStart = -1 Then Exit Function
+ For i = secStart + 1 To secEnd
+  If left$(Trim$(zeilen(i)), Len(Schluessel) + 1) = Schluessel & "=" Then
+   FcIniGetKey = Mid$(Trim$(zeilen(i)), Len(Schluessel) + 2)
+   Exit Function
+  End If
+ Next i
+End Function ' FcIniGetKey$
+
 ' Legt die beiden Filter (Pat/Scan) und ihre Farbzuordnung in FreeCommander.ini an, falls die Vorlage
 ' fehlt (erkannt am Scan-Filter, der "Br5_" enthalten muss). Ueberschreibt dabei bewusst auch evtl.
 ' individuell abweichende Filter unter denselben GUIDs - siehe Absprache vom 15.9.26.
@@ -2844,7 +2873,6 @@ Sub FcEnsureViewTemplate()
  If Len(Dir$(iniPfad)) = 0 Then Exit Sub
  Dim inhalt$
  inhalt = FcReadIni(iniPfad)
- If InStr(inhalt, "FcDetailedViews_fc_default_view") <> 0 Then Exit Sub ' Vorlage schon vorhanden
  Call FcIniSetKey(inhalt, "MainPanel", "LeftViewStyle", "3")
  Call FcIniSetKey(inhalt, "MainPanel", "RightViewStyle", "3")
  Call FcIniSetKey(inhalt, "MainPanel", "LeftSortColumn", "0,9,0,2")
@@ -2899,6 +2927,19 @@ Sub FcEnsureViewTemplate()
  Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_RefValue", "")
  Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Content", "7")
  Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_LvIndex", "3")
+ Dim tabGuidL$, tabGuidR$
+ tabGuidL = FcIniGetKey(inhalt, "TfcTabControl_Left", "ActiveTab")
+ tabGuidR = FcIniGetKey(inhalt, "TfcTabControl_Right", "ActiveTab")
+ If Len(tabGuidL) <> 0 Then
+  Call FcIniSetKey(inhalt, "Tab_" & tabGuidL, "ViewStyle", "3")
+  Call FcIniSetKey(inhalt, "Tab_" & tabGuidL, "Sort", "0,9,0,2")
+  Call FcIniSetKey(inhalt, "Tab_" & tabGuidL, "DetailedView", "fc_default_view")
+ End If
+ If Len(tabGuidR) <> 0 Then
+  Call FcIniSetKey(inhalt, "Tab_" & tabGuidR, "ViewStyle", "3")
+  Call FcIniSetKey(inhalt, "Tab_" & tabGuidR, "Sort", "0,9,0,2")
+  Call FcIniSetKey(inhalt, "Tab_" & tabGuidR, "DetailedView", "fc_default_view")
+ End If
  Call FcWriteIni(iniPfad, inhalt)
 End Sub ' FcEnsureViewTemplate
 
