@@ -2733,6 +2733,7 @@ Sub FcEnsureInstalledAndConfigured()
   Loop
  End If
  Call FcEnsureFilterTemplate
+ Call FcEnsureViewTemplate
 End Sub ' FcEnsureInstalledAndConfigured
 
 ' FreeCommander.ini ist UTF-8 (nicht ANSI!) - deshalb Lesen/Schreiben ausschliesslich ueber
@@ -2832,6 +2833,74 @@ Sub FcEnsureFilterTemplate()
  Call FcIniSetKey(inhalt, "ItemColorsByFileType", "2", "<Filter>:FD6A2283-715D-4C3D-8856-488B6E71B568|26367")
  Call FcWriteIni(iniPfad, inhalt)
 End Sub ' FcEnsureFilterTemplate
+
+' Legt Detailansicht (4 Spalten: Name/Groesse/Geaendert am/Attribute) und absteigende
+' Sortierung nach Aenderungsdatum als Panel-Standard an, falls sie fehlt (erkannt an der
+' Sektion FcDetailedViews_fc_default_view). Werte 1:1 von der Referenz-Installation
+' uebernommen - siehe Absprache vom 16.9.26.
+Sub FcEnsureViewTemplate()
+ Dim iniPfad$
+ iniPfad = Environ$("LOCALAPPDATA") & "\FreeCommanderXE\Settings\FreeCommander.ini"
+ If Len(Dir$(iniPfad)) = 0 Then Exit Sub
+ Dim inhalt$
+ inhalt = FcReadIni(iniPfad)
+ If InStr(inhalt, "FcDetailedViews_fc_default_view") <> 0 Then Exit Sub ' Vorlage schon vorhanden
+ Call FcIniSetKey(inhalt, "MainPanel", "LeftViewStyle", "3")
+ Call FcIniSetKey(inhalt, "MainPanel", "RightViewStyle", "3")
+ Call FcIniSetKey(inhalt, "MainPanel", "LeftSortColumn", "0,9,0,2")
+ Call FcIniSetKey(inhalt, "MainPanel", "RightSortColumn", "0,9,0,2")
+ Call FcIniSetKey(inhalt, "MainPanel", "LeftDetailsProfile", "fc_default_view")
+ Call FcIniSetKey(inhalt, "MainPanel", "RightDetailsProfile", "fc_default_view")
+ Call FcIniSetKey(inhalt, "FcDetailedViews", "1", "fc_default_view")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "LoadShellTitle", "1")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "Condition", "")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "ShowExtensionInCaption", "1")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "ItemsCountRecursive", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "SizeCountRecursive", "1")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "LastSorting", "0,9,0,2")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "AutoSizeNameColumn", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Name", "Name")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Format", "")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Align", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Width", "49")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Sort", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_ContentType", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_ShellContentType", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_RefValue", "")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Content", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_LvIndex", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Name", "Größe Automatisch")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Format", "")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Align", "1")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Width", "9")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Sort", "1")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_ContentType", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_ShellContentType", "1")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_RefValue", "")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Content", "6")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_LvIndex", "1")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Name", "Geändert am")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Format", "")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Align", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Width", "22")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Sort", "1")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_ContentType", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_ShellContentType", "2")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_RefValue", "")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Content", "9")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_LvIndex", "2")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Name", "Attribute")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Format", "")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Align", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Width", "6")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Sort", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_ContentType", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_ShellContentType", "0")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_RefValue", "")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Content", "7")
+ Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_LvIndex", "3")
+ Call FcWriteIni(iniPfad, inhalt)
+End Sub ' FcEnsureViewTemplate
 
 ' Setzt den IncludeMask-Wert des vorbereiteten Pat-Filters (Name enthaelt Nachname) in FreeCommander.ini.
 ' Der Filter selbst (Titel Pat, GUID FE52C301-625F-43FF-AB48-DF7BB370B7FC) sowie der zweite, statische
