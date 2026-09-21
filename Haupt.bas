@@ -1708,6 +1708,7 @@ Function Tasks()
  End Select
  KWn "poetaktiv.exe", uVerz & "Programmierung\poetaktiv", ProgVerz
  KWn "Expaufruf.exe", uVerz & "Programmierung\ExpAufruf", ProgVerz
+ KWn "FCAufruf.exe", uVerz & "Programmierung\FCAufruf", ProgVerz
  machAufgb "Turbomed Ausfallwarnung", ProgVerz & "poetaktiv.exe", "", 8193, 1800000, 32, ProgVerz, "", uName, #9/2/2015#, 1, 0, 0, 2, 1439, #12:01:00 AM#, #11/30/1999#, 0, 1, 267008, True, "", False
 ' rufauf "cmd", "/c schtasks /query /tn ""Turbomed toeten"" >NUL 2>&1 || schtasks /create /ru administrator /rp " & AdminPwd & " /sc minute /tn ""Turbomed toeten"" /tr ""cmd /c 'if not exist \\virtwin\turbomed\lauf taskkill /im turbomed.exe /t /f'""", True
  machAufgb "Turbomed töten", "cmd", "", 8193, 1800000, 1, "", "Turbomed für Backup beenden", uName, #10/13/2021#, 1, 0, 0, 1, 1439, #12:02:00 AM#, #11/30/1999#, 0, 1, 267008, True, "/c ""if exist \\linux1\turbomed\lau findstr /c:Mehrplatzbetrieb={ja} c:\turbomed\programm\local.ini >Nul 2>&amp;1 &amp;&amp; taskkill /im turbomed.exe /t /f""", True, True
