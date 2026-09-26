@@ -2651,7 +2651,7 @@ Sub Main()
 ' Else
 '  SuSh "explorer.exe p:\plz", 0, "p:\plz", 0, vbMaximizedFocus ' 3
 ' End If
- rufauf "firefox.exe", "http://linux1/plz/"
+ rufauf "firefox.exe", "http://linux1/plz/", , , 0 ' asynchron: ist Firefox noch nicht offen, liefe der gestartete Prozess weiter
 ' rufauf "explorer", "p:\plz", 0, "p:\plz", 0, 3
  
  ' fi.Stand = "20 nach p:\plz"
