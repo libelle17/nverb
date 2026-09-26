@@ -51,12 +51,12 @@ Function Shareadd&(ByVal Server$, ByVal FreigabePfad$, ByVal FreigabeName$, Opti
   Dim parmerr    As Long
   Dim si2        As SHARE_INFO_2
   Dim gabsschon%, fgpfad$
-  If Not FSO.FolderExists(FreigabePfad) Or Left(FreigabePfad, 1) = "\" Then Exit Function
+  If Not FSO.FolderExists(FreigabePfad) Or left(FreigabePfad, 1) = "\" Then Exit Function
   If Right$(FreigabePfad, 1) = "\" Then
    If Right$(FreigabePfad, 2) = ":\" Then
     fgpfad = FreigabePfad
    Else
-    fgpfad = Left(FreigabePfad, Len(FreigabePfad) - 1)
+    fgpfad = left(FreigabePfad, Len(FreigabePfad) - 1)
    End If
   Else
    If Right$(FreigabePfad, 1) = ":" Then
@@ -106,7 +106,7 @@ Function Shareadd&(ByVal Server$, ByVal FreigabePfad$, ByVal FreigabeName$, Opti
    Shareadd = NetShareAdd(dwServer, 2, si2, parmerr)
  Else ' win_ver < vista
   If Not gabsschon Then
-   If Right(FreigabePfad, 1) = "\" Then FreigabePfad = Left(FreigabePfad, Len(FreigabePfad) - 1)
+   If Right(FreigabePfad, 1) = "\" Then FreigabePfad = left(FreigabePfad, Len(FreigabePfad) - 1)
 '   erg = Not Shell(doalsad & acceu & AdminGes & " cmd /c net share " & FreigabeName & "=" & Chr$(34) & FreigabePfad & Chr$(34) & " /unlimited /remark:" & Chr$(34) & Remark & Chr$(34))
 '   erg = Not SuSh("cmd /c net share " & FreigabeName & "=" & Chr$(34) & FreigabePfad & Chr$(34) & " /unlimited /remark:" & Chr$(34) & Remark & Chr$(34), 2)
    erg = rufauf("cmd", "/c net share " & FreigabeName & "=""" & FreigabePfad & """ /unlimited /remark:""" & Remark & """", 2, , , 0)
@@ -132,7 +132,7 @@ Function Shareadd&(ByVal Server$, ByVal FreigabePfad$, ByVal FreigabeName$, Opti
  End If
  Exit Function
 fehler:
-Select Case MsgBox("Fehler in ShareAdd: " & "Server:" & Server & vbCrLf & "Freigabename:" & FreigabeName & vbCrLf & "Freigabepfad: " & fgpfad & vbCrLf & "Remark:" & Remark & vbCrLf & "FNr: " + CStr(Err.Number) + vbCrLf + "LastDLLError: " + CStr(Err.LastDllError) + vbCrLf + "Source: " + IIf(IsNull(Err.source), "", CStr(Err.source)) + vbCrLf + "Description: " + Err.Description + vbCrLf + "Fehlerposition: " + CStr(FPos), vbAbortRetryIgnore, "Aufgefangener Fehler in ShareAdd/" + App.Path)
+Select Case MsgBox("Fehler in ShareAdd: " & "Server:" & Server & vbCrLf & "Freigabename:" & FreigabeName & vbCrLf & "Freigabepfad: " & fgpfad & vbCrLf & "Remark:" & Remark & vbCrLf & "FNr: " + CStr(Err.Number) + vbCrLf + "LastDLLError: " + CStr(Err.LastDllError) + vbCrLf + "Source: " + IIf(IsNull(Err.Source), "", CStr(Err.Source)) + vbCrLf + "Description: " + Err.Description + vbCrLf + "Fehlerposition: " + CStr(FPos), vbAbortRetryIgnore, "Aufgefangener Fehler in ShareAdd/" + App.Path)
  Case vbAbort: Call MsgBox("Höre auf"): ProgEnde
  Case vbRetry: Call MsgBox("Versuche nochmal"): Resume
  Case vbIgnore: Call MsgBox("Setze fort"): Resume Next
