@@ -2556,6 +2556,7 @@ Sub Main()
  Call AnheftNachVerz("Dienstplan Praxis", ProgVerz & "\DP", "Dienstplan.exe")
  Call KWnK("DateiLese.exe", "Dateilesen")
  Call AnheftNachVerz("Patientendaten", ProgVerz & "\Dateilesen", "DateiLese.exe")
+ Call MOReiterStarten
  ' fi.Stand = "15. Nach Anheft"
  Call StartBen("15")
  
@@ -2741,35 +2742,35 @@ End Sub ' FcEnsureInstalledAndConfigured
 ' ADODB.Stream, niemals ueber WritePrivateProfileStringA/GetPrivateProfileStringA (die schreiben
 ' im ANSI-Codepage des Rechners und zerstoeren dabei die UTF-8-Datei - FreeCommander-Fehlermeldung
 ' dann "No mapping for the Unicode character..." - siehe Vorfall 16.9.26.
-Function FcReadIni$(pfad$)
- Dim st As New ADODB.Stream
- st.Type = adTypeText
- st.Charset = "utf-8"
- st.Open
- st.LoadFromFile pfad
- FcReadIni = st.ReadText
- st.Close
+Function FcReadIni$(Pfad$)
+ Dim ST As New ADODB.Stream
+ ST.Type = adTypeText
+ ST.Charset = "utf-8"
+ ST.Open
+ ST.LoadFromFile Pfad
+ FcReadIni = ST.ReadText
+ ST.Close
 End Function ' FcReadIni$
 
-Sub FcWriteIni(pfad$, inhalt$)
- Dim st As New ADODB.Stream
- st.Type = adTypeText
- st.Charset = "utf-8"
- st.Open
- st.WriteText inhalt
- st.SaveToFile pfad, adSaveCreateOverWrite
- st.Close
+Sub FcWriteIni(Pfad$, Inhalt$)
+ Dim ST As New ADODB.Stream
+ ST.Type = adTypeText
+ ST.Charset = "utf-8"
+ ST.Open
+ ST.WriteText Inhalt
+ ST.SaveToFile Pfad, adSaveCreateOverWrite
+ ST.Close
 End Sub ' FcWriteIni
 
 ' Setzt (oder legt neu an) einen Schluessel innerhalb einer Section eines im Speicher gehaltenen
 ' ini-Texts. Reine Textbehandlung (kein Win32-Profile-API), damit die UTF-8-Kodierung erhalten bleibt.
-Sub FcIniSetKey(ByRef inhalt$, section$, Schluessel$, wert$)
+Sub FcIniSetKey(ByRef Inhalt$, Section$, Schluessel$, Wert$)
  Dim zeilen() As String
- zeilen = Split(inhalt, vbCrLf)
+ zeilen = Split(Inhalt, vbCrLf)
  Dim i&, secStart&, secEnd&
  secStart = -1
  For i = 0 To UBound(zeilen)
-  If Trim$(zeilen(i)) = "[" & section & "]" Then
+  If Trim$(zeilen(i)) = "[" & Section & "]" Then
    secStart = i
    secEnd = UBound(zeilen)
    Dim j&
@@ -2784,15 +2785,15 @@ Sub FcIniSetKey(ByRef inhalt$, section$, Schluessel$, wert$)
  Next i
  If secStart = -1 Then
   ReDim Preserve zeilen(UBound(zeilen) + 2)
-  zeilen(UBound(zeilen) - 1) = "[" & section & "]"
-  zeilen(UBound(zeilen)) = Schluessel & "=" & wert
-  inhalt = Join(zeilen, vbCrLf)
+  zeilen(UBound(zeilen) - 1) = "[" & Section & "]"
+  zeilen(UBound(zeilen)) = Schluessel & "=" & Wert
+  Inhalt = Join(zeilen, vbCrLf)
   Exit Sub
  End If
  For i = secStart + 1 To secEnd
   If left$(Trim$(zeilen(i)), Len(Schluessel) + 1) = Schluessel & "=" Then
-   zeilen(i) = Schluessel & "=" & wert
-   inhalt = Join(zeilen, vbCrLf)
+   zeilen(i) = Schluessel & "=" & Wert
+   Inhalt = Join(zeilen, vbCrLf)
    Exit Sub
   End If
  Next i
@@ -2801,21 +2802,21 @@ Sub FcIniSetKey(ByRef inhalt$, section$, Schluessel$, wert$)
  For i = 0 To secStart
   neu(i) = zeilen(i)
  Next i
- neu(secStart + 1) = Schluessel & "=" & wert
+ neu(secStart + 1) = Schluessel & "=" & Wert
  For i = secStart + 1 To UBound(zeilen)
   neu(i + 1) = zeilen(i)
  Next i
- inhalt = Join(neu, vbCrLf)
+ Inhalt = Join(neu, vbCrLf)
 End Sub ' FcIniSetKey
 
 ' Liest einen Schluesselwert aus einem im Speicher gehaltenen ini-Text (Gegenstueck zu FcIniSetKey).
-Function FcIniGetKey$(inhalt$, section$, Schluessel$)
+Function FcIniGetKey$(Inhalt$, Section$, Schluessel$)
  Dim zeilen() As String
- zeilen = Split(inhalt, vbCrLf)
+ zeilen = Split(Inhalt, vbCrLf)
  Dim i&, secStart&, secEnd&
  secStart = -1
  For i = 0 To UBound(zeilen)
-  If Trim$(zeilen(i)) = "[" & section & "]" Then
+  If Trim$(zeilen(i)) = "[" & Section & "]" Then
    secStart = i
    secEnd = UBound(zeilen)
    Dim j&
@@ -2844,24 +2845,24 @@ Sub FcEnsureFilterTemplate()
  Dim iniPfad$
  iniPfad = Environ$("LOCALAPPDATA") & "\FreeCommanderXE\Settings\FreeCommander.ini"
  If Len(Dir$(iniPfad)) = 0 Then Exit Sub
- Dim inhalt$
- inhalt = FcReadIni(iniPfad)
- If InStr(inhalt, "Br5_") <> 0 Then Exit Sub ' Vorlage schon vorhanden
- Call FcIniSetKey(inhalt, "FcFilters", "1", "FE52C301-625F-43FF-AB48-DF7BB370B7FC")
- Call FcIniSetKey(inhalt, "FcFilters", "2", "FD6A2283-715D-4C3D-8856-488B6E71B568")
- Call FcIniSetKey(inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "Title", "Pat")
- Call FcIniSetKey(inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "UsingType", "0")
- Call FcIniSetKey(inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "IncludeMask", "*")
- Call FcIniSetKey(inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "ExcludeMask", "")
- Call FcIniSetKey(inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "MaskAsRegExpr", "0")
- Call FcIniSetKey(inhalt, "Filter_FD6A2283-715D-4C3D-8856-488B6E71B568", "Title", "Scan")
- Call FcIniSetKey(inhalt, "Filter_FD6A2283-715D-4C3D-8856-488B6E71B568", "UsingType", "0")
- Call FcIniSetKey(inhalt, "Filter_FD6A2283-715D-4C3D-8856-488B6E71B568", "IncludeMask", "Br5_*;Br_*;Eps_*;")
- Call FcIniSetKey(inhalt, "Filter_FD6A2283-715D-4C3D-8856-488B6E71B568", "ExcludeMask", "")
- Call FcIniSetKey(inhalt, "Filter_FD6A2283-715D-4C3D-8856-488B6E71B568", "MaskAsRegExpr", "0")
- Call FcIniSetKey(inhalt, "ItemColorsByFileType", "1", "<Filter>:FE52C301-625F-43FF-AB48-DF7BB370B7FC|255")
- Call FcIniSetKey(inhalt, "ItemColorsByFileType", "2", "<Filter>:FD6A2283-715D-4C3D-8856-488B6E71B568|26367")
- Call FcWriteIni(iniPfad, inhalt)
+ Dim Inhalt$
+ Inhalt = FcReadIni(iniPfad)
+ If InStr(Inhalt, "Br5_") <> 0 Then Exit Sub ' Vorlage schon vorhanden
+ Call FcIniSetKey(Inhalt, "FcFilters", "1", "FE52C301-625F-43FF-AB48-DF7BB370B7FC")
+ Call FcIniSetKey(Inhalt, "FcFilters", "2", "FD6A2283-715D-4C3D-8856-488B6E71B568")
+ Call FcIniSetKey(Inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "Title", "Pat")
+ Call FcIniSetKey(Inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "UsingType", "0")
+ Call FcIniSetKey(Inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "IncludeMask", "*")
+ Call FcIniSetKey(Inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "ExcludeMask", "")
+ Call FcIniSetKey(Inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "MaskAsRegExpr", "0")
+ Call FcIniSetKey(Inhalt, "Filter_FD6A2283-715D-4C3D-8856-488B6E71B568", "Title", "Scan")
+ Call FcIniSetKey(Inhalt, "Filter_FD6A2283-715D-4C3D-8856-488B6E71B568", "UsingType", "0")
+ Call FcIniSetKey(Inhalt, "Filter_FD6A2283-715D-4C3D-8856-488B6E71B568", "IncludeMask", "Br5_*;Br_*;Eps_*;")
+ Call FcIniSetKey(Inhalt, "Filter_FD6A2283-715D-4C3D-8856-488B6E71B568", "ExcludeMask", "")
+ Call FcIniSetKey(Inhalt, "Filter_FD6A2283-715D-4C3D-8856-488B6E71B568", "MaskAsRegExpr", "0")
+ Call FcIniSetKey(Inhalt, "ItemColorsByFileType", "1", "<Filter>:FE52C301-625F-43FF-AB48-DF7BB370B7FC|255")
+ Call FcIniSetKey(Inhalt, "ItemColorsByFileType", "2", "<Filter>:FD6A2283-715D-4C3D-8856-488B6E71B568|26367")
+ Call FcWriteIni(iniPfad, Inhalt)
 End Sub ' FcEnsureFilterTemplate
 
 ' Legt Detailansicht (4 Spalten: Name/Groesse/Geaendert am/Attribute) und absteigende
@@ -2872,77 +2873,77 @@ Sub FcEnsureViewTemplate()
  Dim iniPfad$
  iniPfad = Environ$("LOCALAPPDATA") & "\FreeCommanderXE\Settings\FreeCommander.ini"
  If Len(Dir$(iniPfad)) = 0 Then Exit Sub
- Dim inhalt$
- inhalt = FcReadIni(iniPfad)
- Call FcIniSetKey(inhalt, "MainPanel", "LeftViewStyle", "3")
- Call FcIniSetKey(inhalt, "MainPanel", "RightViewStyle", "3")
- Call FcIniSetKey(inhalt, "MainPanel", "LeftSortColumn", "0,9,0,2")
- Call FcIniSetKey(inhalt, "MainPanel", "RightSortColumn", "0,9,0,2")
- Call FcIniSetKey(inhalt, "MainPanel", "LeftDetailsProfile", "fc_default_view")
- Call FcIniSetKey(inhalt, "MainPanel", "RightDetailsProfile", "fc_default_view")
- Call FcIniSetKey(inhalt, "Form", "SortDirAlwaysOnEnd", "1") ' Dateien vor Ordnern
- Call FcIniSetKey(inhalt, "FcDetailedViews", "1", "fc_default_view")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "LoadShellTitle", "1")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "Condition", "")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "ShowExtensionInCaption", "1")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "ItemsCountRecursive", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "SizeCountRecursive", "1")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "LastSorting", "0,9,0,2")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "AutoSizeNameColumn", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Name", "Name")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Format", "")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Align", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Width", "49")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Sort", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_ContentType", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_ShellContentType", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_RefValue", "")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_Content", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "1col_LvIndex", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Name", "Größe Automatisch")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Format", "")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Align", "1")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Width", "9")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Sort", "1")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_ContentType", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_ShellContentType", "1")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_RefValue", "")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_Content", "6")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "2col_LvIndex", "1")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Name", "Geändert am")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Format", "")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Align", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Width", "22")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Sort", "1")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_ContentType", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_ShellContentType", "2")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_RefValue", "")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_Content", "9")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "3col_LvIndex", "2")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Name", "Attribute")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Format", "")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Align", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Width", "6")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Sort", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_ContentType", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_ShellContentType", "0")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_RefValue", "")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_Content", "7")
- Call FcIniSetKey(inhalt, "FcDetailedViews_fc_default_view", "4col_LvIndex", "3")
+ Dim Inhalt$
+ Inhalt = FcReadIni(iniPfad)
+ Call FcIniSetKey(Inhalt, "MainPanel", "LeftViewStyle", "3")
+ Call FcIniSetKey(Inhalt, "MainPanel", "RightViewStyle", "3")
+ Call FcIniSetKey(Inhalt, "MainPanel", "LeftSortColumn", "0,9,0,2")
+ Call FcIniSetKey(Inhalt, "MainPanel", "RightSortColumn", "0,9,0,2")
+ Call FcIniSetKey(Inhalt, "MainPanel", "LeftDetailsProfile", "fc_default_view")
+ Call FcIniSetKey(Inhalt, "MainPanel", "RightDetailsProfile", "fc_default_view")
+ Call FcIniSetKey(Inhalt, "Form", "SortDirAlwaysOnEnd", "1") ' Dateien vor Ordnern
+ Call FcIniSetKey(Inhalt, "FcDetailedViews", "1", "fc_default_view")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "LoadShellTitle", "1")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "Condition", "")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "ShowExtensionInCaption", "1")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "ItemsCountRecursive", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "SizeCountRecursive", "1")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "LastSorting", "0,9,0,2")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "AutoSizeNameColumn", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "1col_Name", "Name")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "1col_Format", "")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "1col_Align", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "1col_Width", "49")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "1col_Sort", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "1col_ContentType", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "1col_ShellContentType", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "1col_RefValue", "")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "1col_Content", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "1col_LvIndex", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "2col_Name", "Größe Automatisch")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "2col_Format", "")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "2col_Align", "1")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "2col_Width", "9")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "2col_Sort", "1")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "2col_ContentType", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "2col_ShellContentType", "1")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "2col_RefValue", "")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "2col_Content", "6")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "2col_LvIndex", "1")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "3col_Name", "Geändert am")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "3col_Format", "")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "3col_Align", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "3col_Width", "22")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "3col_Sort", "1")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "3col_ContentType", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "3col_ShellContentType", "2")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "3col_RefValue", "")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "3col_Content", "9")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "3col_LvIndex", "2")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "4col_Name", "Attribute")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "4col_Format", "")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "4col_Align", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "4col_Width", "6")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "4col_Sort", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "4col_ContentType", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "4col_ShellContentType", "0")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "4col_RefValue", "")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "4col_Content", "7")
+ Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "4col_LvIndex", "3")
  Dim tabGuidL$, tabGuidR$
- tabGuidL = FcIniGetKey(inhalt, "TfcTabControl_Left", "ActiveTab")
- tabGuidR = FcIniGetKey(inhalt, "TfcTabControl_Right", "ActiveTab")
+ tabGuidL = FcIniGetKey(Inhalt, "TfcTabControl_Left", "ActiveTab")
+ tabGuidR = FcIniGetKey(Inhalt, "TfcTabControl_Right", "ActiveTab")
  If Len(tabGuidL) <> 0 Then
-  Call FcIniSetKey(inhalt, "Tab_" & tabGuidL, "ViewStyle", "3")
-  Call FcIniSetKey(inhalt, "Tab_" & tabGuidL, "Sort", "0,9,0,2")
-  Call FcIniSetKey(inhalt, "Tab_" & tabGuidL, "DetailedView", "fc_default_view")
+  Call FcIniSetKey(Inhalt, "Tab_" & tabGuidL, "ViewStyle", "3")
+  Call FcIniSetKey(Inhalt, "Tab_" & tabGuidL, "Sort", "0,9,0,2")
+  Call FcIniSetKey(Inhalt, "Tab_" & tabGuidL, "DetailedView", "fc_default_view")
  End If
  If Len(tabGuidR) <> 0 Then
-  Call FcIniSetKey(inhalt, "Tab_" & tabGuidR, "ViewStyle", "3")
-  Call FcIniSetKey(inhalt, "Tab_" & tabGuidR, "Sort", "0,9,0,2")
-  Call FcIniSetKey(inhalt, "Tab_" & tabGuidR, "DetailedView", "fc_default_view")
+  Call FcIniSetKey(Inhalt, "Tab_" & tabGuidR, "ViewStyle", "3")
+  Call FcIniSetKey(Inhalt, "Tab_" & tabGuidR, "Sort", "0,9,0,2")
+  Call FcIniSetKey(Inhalt, "Tab_" & tabGuidR, "DetailedView", "fc_default_view")
  End If
- Call FcWriteIni(iniPfad, inhalt)
+ Call FcWriteIni(iniPfad, Inhalt)
 End Sub ' FcEnsureViewTemplate
 
 ' Setzt den IncludeMask-Wert des vorbereiteten Pat-Filters (Name enthaelt Nachname) in FreeCommander.ini.
@@ -2955,10 +2956,10 @@ Sub FcSetPatFilterIncludeMask(nachname$)
  Dim iniPfad$
  iniPfad = Environ$("LOCALAPPDATA") & "\FreeCommanderXE\Settings\FreeCommander.ini"
  If Len(Dir$(iniPfad)) = 0 Then Exit Sub ' FreeCommander wurde auf diesem PC noch nie gestartet/eingerichtet
- Dim inhalt$
- inhalt = FcReadIni(iniPfad)
- Call FcIniSetKey(inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "IncludeMask", "*" & nachname & "*")
- Call FcWriteIni(iniPfad, inhalt)
+ Dim Inhalt$
+ Inhalt = FcReadIni(iniPfad)
+ Call FcIniSetKey(Inhalt, "Filter_FE52C301-625F-43FF-AB48-DF7BB370B7FC", "IncludeMask", "*" & nachname & "*")
+ Call FcWriteIni(iniPfad, Inhalt)
 End Sub ' FcSetPatFilterIncludeMask
 
 ' Dekodiert einen mit der JS-Hilfsfunktion im Laufzettel (%-kodiert, 1 Byte je Zeichen, Windows-1252/ANSI -
@@ -3676,6 +3677,32 @@ Select Case MsgBox("FNr: " + CStr(Err.Number) + vbCrLf + "LastDLLError: " + CStr
  Case vbIgnore: Call MsgBox("Setze fort"): Resume Next
 End Select
 End Function ' WordOhneStartup()
+
+Sub MOReiterStarten() ' MOReiter (Strg+Alt+K/L: Reiter Kartei/Krankenblatt in Medical Office) lokal aktualisieren und starten
+ Dim Netz$, Lokal$
+ On Error GoTo fehler
+ Call SetProgV
+ Netz = EigDatDirekt & "\Programmierung\MOReiter\MOReiter.exe"
+ Lokal = ProgVerz & "\MOReiter\MOReiter.exe"
+ If Not FileExists(Netz) Then Exit Sub
+ If FileExists(Lokal) Then
+  ' eine laufende alte Version sperrt die Datei, also vor dem Kopieren beenden
+  If FSO.GetFile(Netz).DateLastModified > FSO.GetFile(Lokal).DateLastModified Then
+   Call GetProcessCollection(2, "moreiter.exe")
+   Sleep 500 ' bis Windows die Datei freigibt
+  End If
+ End If
+ Call KWnK("MOReiter.exe", "MOReiter")
+ ' MOReiter beendet sich selbst, wenn es schon laeuft
+ If FileExists(Lokal) Then rufauf Lokal, vNS, 0, ProgVerz & "\MOReiter", 0
+ Exit Sub
+fehler:
+Select Case MsgBox("FNr: " + CStr(Err.Number) + vbCrLf + "LastDLLError: " + CStr(Err.LastDllError) + vbCrLf + "Source: " + IIf(IsNull(Err.Source), "", CStr(Err.Source)) + vbCrLf + "Description: " + Err.Description + vbCrLf + "Fehlerposition: " + CStr(FPos), vbAbortRetryIgnore, "Aufgefangener Fehler in MOReiterStarten/" + App.Path)
+ Case vbAbort: Call MsgBox("Höre auf"): ProgEnde
+ Case vbRetry: Call MsgBox("Versuche nochmal"): Resume
+ Case vbIgnore: Call MsgBox("Setze fort"): Resume Next
+End Select
+End Sub ' MOReiterStarten
 
 Sub KWnK(D$, U$) ' Kopiere wenn neuer konstant
  On Error GoTo fehler
