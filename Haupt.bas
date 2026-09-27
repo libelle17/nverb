@@ -3679,11 +3679,13 @@ End Select
 End Function ' WordOhneStartup()
 
 Sub MOReiterStarten() ' MOReiter (Strg+Alt+K/L: Reiter Kartei/Krankenblatt in Medical Office) lokal aktualisieren und starten
- Dim Netz$, Lokal$
+ Dim Netz$, LVerz$, Lokal$
  On Error GoTo fehler
  Call SetProgV
  Netz = EigDatDirekt & "\Programmierung\MOReiter\MOReiter.exe"
- Lokal = ProgVerz & "\MOReiter\MOReiter.exe"
+ ' 27.9.26: AppVerz statt ProgVerz, der Ordner in %programfiles(x86)% liess sich auf amd und anmh nicht anlegen
+ LVerz = AppVerz & "\MOReiter"
+ Lokal = LVerz & "\MOReiter.exe"
  If Not FileExists(Netz) Then Exit Sub
  If FileExists(Lokal) Then
   ' eine laufende alte Version sperrt die Datei, also vor dem Kopieren beenden
@@ -3692,9 +3694,10 @@ Sub MOReiterStarten() ' MOReiter (Strg+Alt+K/L: Reiter Kartei/Krankenblatt in Me
    Sleep 500 ' bis Windows die Datei freigibt
   End If
  End If
- Call KWnK("MOReiter.exe", "MOReiter")
+ Call VerzPrüf(LVerz)
+ Call KWn("MOReiter.exe", EigDatDirekt & "\Programmierung\MOReiter", LVerz)
  ' MOReiter beendet sich selbst, wenn es schon laeuft
- If FileExists(Lokal) Then rufauf Lokal, vNS, 0, ProgVerz & "\MOReiter", 0
+ If FileExists(Lokal) Then rufauf Lokal, vNS, 0, LVerz, 0
  Exit Sub
 fehler:
 Select Case MsgBox("FNr: " + CStr(Err.Number) + vbCrLf + "LastDLLError: " + CStr(Err.LastDllError) + vbCrLf + "Source: " + IIf(IsNull(Err.Source), "", CStr(Err.Source)) + vbCrLf + "Description: " + Err.Description + vbCrLf + "Fehlerposition: " + CStr(FPos), vbAbortRetryIgnore, "Aufgefangener Fehler in MOReiterStarten/" + App.Path)
