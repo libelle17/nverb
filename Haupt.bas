@@ -3696,6 +3696,8 @@ Sub MOReiterStarten() ' MOReiter (Strg+Alt+K/L: Reiter Kartei/Krankenblatt in Me
  End If
  Call VerzPrüf(LVerz)
  Call KWn("MOReiter.exe", EigDatDirekt & "\Programmierung\MOReiter", LVerz)
+ ' 27.9.26: Kalibrierung (Reiterpositionen) fuer alle PCs vom Netz; MOReiter liest sie aus %appdata%, nicht aus LVerz
+ Call KWn("MOReiter.ini", EigDatDirekt & "\Programmierung\MOReiter", Environ("appdata") & "\MOReiter")
  ' MOReiter beendet sich selbst, wenn es schon laeuft
  If FileExists(Lokal) Then rufauf Lokal, vNS, 0, LVerz, 0
  Exit Sub
