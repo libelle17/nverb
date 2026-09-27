@@ -2163,7 +2163,7 @@ Function Links()
  KWn "Omnipod-Gutachten.lnk", uVerz & "DM\mylife Gutachten-Assistent V4-2011-03", Favor
   
  KWn "KeePass 2 Schade" & ".lnk", "Y:", StartMenProg ' Kopiere wenn neuer
- KWn "KeePass 2 Praxis" & ".lnk", "Y:", StartMenProg ' Kopiere wenn neuer
+ ' 27.9.26: "KeePass 2 Praxis.lnk" nicht mehr von Y:, sondern in MOReiterStarten aus dem NetzVerbind-Verzeichnis
  Exit Function
 fehler:
 Select Case MsgBox("FNr: " + CStr(Err.Number) + vbCrLf + "LastDLLError: " + CStr(Err.LastDllError) + vbCrLf + "Source: " + IIf(IsNull(Err.Source), "", CStr(Err.Source)) + vbCrLf + "Description: " + Err.Description + vbCrLf + "Fehlerposition: " + CStr(FPos), vbAbortRetryIgnore, "Aufgefangener Fehler in Links/" + App.Path)
@@ -3686,6 +3686,17 @@ Sub MOReiterStarten() ' MOReiter (Strg+Alt+K/L: Reiter Kartei/Krankenblatt in Me
  ' 27.9.26: AppVerz statt ProgVerz, der Ordner in %programfiles(x86)% liess sich auf amd und anmh nicht anlegen
  LVerz = AppVerz & "\MOReiter"
  Lokal = LVerz & "\MOReiter.exe"
+ ' 27.9.26: vor der Verteilung von MOReiter den Startmenue-Link "KeePass 2 Praxis" durch den aus dem NetzVerbind-Verzeichnis ersetzen,
+ ' bei jeder Abweichung (nicht nur wenn juenger), damit ein anderswo veraenderter Link wieder korrigiert wird
+ Dim KPQ$, KPZ$
+ KPQ = EigDatDirekt & "\Programmierung\NetzVerbind\KeePass 2 Praxis.lnk"
+ KPZ = StartMenProg & "\KeePass 2 Praxis.lnk"
+ If FileExists(KPQ) Then
+  Dim KPKop%
+  KPKop = Not FileExists(KPZ)
+  If Not KPKop Then KPKop = (FSO.GetFile(KPQ).Size <> FSO.GetFile(KPZ).Size Or FSO.GetFile(KPQ).DateLastModified <> FSO.GetFile(KPZ).DateLastModified)
+  If KPKop Then Call KopDat(KPQ, StartMenProg & "\") ' KopDat kopiert ab Vista mit Adminrechten
+ End If
  If Not FileExists(Netz) Then Exit Sub
  If FileExists(Lokal) Then
   ' eine laufende alte Version sperrt die Datei, also vor dem Kopieren beenden
