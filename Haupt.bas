@@ -3692,6 +3692,19 @@ Sub MOReiterStarten() ' MOReiter (Strg+Alt+K/L: Reiter Kartei/Krankenblatt in Me
  KPQ = EigDatDirekt & "\Programmierung\NetzVerbind\KeePass 2 Praxis.lnk"
  KPZ = StartMenProg & "\KeePass 2 Praxis.lnk"
  If FileExists(KPQ) Then
+  ' bis 28.9.26: den alten (juengeren) Link loeschen, sonst ersetzt KopDat ihn nicht (xcopy /d kopiert nur juengere Dateien);
+  ' ebenso die Zwischenkopie von KopDat in %userprofile%, die noch vom alten Link stammen kann
+  If Date < DateSerial(2026, 9, 29) Then
+   Dim KPAlt
+   For Each KPAlt In Array(KPZ, Environ("userprofile") & "\KeePass 2 Praxis.lnk")
+    If FileExists(CStr(KPAlt)) Then
+     On Error Resume Next
+     FSO.DeleteFile CStr(KPAlt), True
+     On Error GoTo fehler
+     If FileExists(CStr(KPAlt)) Then rufauf "cmd", "/e:on /c del /f """ & KPAlt & """", , , 0, 0
+    End If
+   Next KPAlt
+  End If
   Dim KPKop%
   KPKop = Not FileExists(KPZ)
   If Not KPKop Then KPKop = (FSO.GetFile(KPQ).Size <> FSO.GetFile(KPZ).Size Or FSO.GetFile(KPQ).DateLastModified <> FSO.GetFile(KPZ).DateLastModified)
