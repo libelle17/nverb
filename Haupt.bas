@@ -2555,6 +2555,7 @@ Sub Main()
  Call KWnK("Dienstplan.exe", "DP")
  Call AnheftNachVerz("Dienstplan Praxis", ProgVerz & "\DP", "Dienstplan.exe")
  Call KWnK("DateiLese.exe", "Dateilesen")
+ Call KWnK("Zugang.ini", "Dateilesen")
  Call AnheftNachVerz("Patientendaten", ProgVerz & "\Dateilesen", "DateiLese.exe")
  Call MOReiterStarten
  ' fi.Stand = "15. Nach Anheft"
@@ -3707,7 +3708,7 @@ Sub MOReiterStarten() ' MOReiter (Strg+Alt+K/L: Reiter Kartei/Krankenblatt in Me
   End If
   Dim KPKop%
   KPKop = Not FileExists(KPZ)
-  If Not KPKop Then KPKop = (FSO.GetFile(KPQ).Size <> FSO.GetFile(KPZ).Size Or FSO.GetFile(KPQ).DateLastModified <> FSO.GetFile(KPZ).DateLastModified)
+  If Not KPKop Then KPKop = (FSO.GetFile(KPQ).size <> FSO.GetFile(KPZ).size Or FSO.GetFile(KPQ).DateLastModified <> FSO.GetFile(KPZ).DateLastModified)
   If KPKop Then Call KopDat(KPQ, StartMenProg & "\") ' KopDat kopiert ab Vista mit Adminrechten
  End If
  If Not FileExists(Netz) Then Exit Sub
