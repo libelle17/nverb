@@ -3732,8 +3732,11 @@ Sub MOReiterStarten() ' MOReiter (Strg+Alt+K/L: Reiter Kartei/Krankenblatt in Me
  End If
  Call VerzPrüf(LVerz)
  Call KWn("MOReiter.exe", EigDatDirekt & "\Programmierung\MOReiter", LVerz)
- ' 27.9.26: Kalibrierung (Reiterpositionen) fuer alle PCs vom Netz; MOReiter liest sie aus %appdata%, nicht aus LVerz
- Call KWn("MOReiter.ini", EigDatDirekt & "\Programmierung\MOReiter", Environ("appdata") & "\MOReiter")
+ ' 27.9.26: Kalibrierung (Reiterpositionen) fuer alle PCs vom Netz
+ ' 8.10.26: als MOReiter-Vorgaben.ini neben die exe; MOReiter nimmt sie nur fuer Werte, die in der eigenen
+ ' %appdata%\MOReiter\MOReiter.ini fehlen, so dass Kalibrierungen am einzelnen PC erhalten bleiben
+ ' (frueher wurde MOReiter.ini selbst ueberschrieben, sobald die Netzfassung neuer war)
+ Call KWn("MOReiter-Vorgaben.ini", EigDatDirekt & "\Programmierung\MOReiter", LVerz)
  ' MOReiter beendet sich selbst, wenn es schon laeuft
  If FileExists(Lokal) Then rufauf Lokal, vNS, 0, LVerz, 0
  Exit Sub
