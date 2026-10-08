@@ -3748,44 +3748,33 @@ Select Case MsgBox("FNr: " + CStr(Err.Number) + vbCrLf + "LastDLLError: " + CStr
 End Select
 End Sub ' MOReiterStarten
 
-' 8.10.26: Firefox-Add-on Tampermonkey (fuer MOReiter Strg+Alt+B, Laborbefunde) ueber eine Unternehmensrichtlinie
-' installieren: legt im Firefox-Programmverzeichnis distribution\policies.json an, die das Add-on aus
-' v:\neu\tampermonkey-*.xpi beim naechsten Firefox-Start fuer alle Benutzer einrichtet (abschaltbar, nicht entfernbar).
-' Eine schon vorhandene policies.json ohne Tampermonkey bleibt unberuehrt (koennte andere Richtlinien enthalten).
-' Das Benutzerskript selbst installiert MOReiter bei Bedarf (oeffnet seine Installationsseite in Tampermonkey).
+' 8.10.26: entfernt die distribution\policies.json, die eine fruehere Fassung von FirefoxTampermonkey im
+' Firefox-Programmverzeichnis angelegt hatte: mit ihr hat Firefox (auf szn4) das vom Benutzer installierte
+' Tampermonkey samt Skripten entfernt. Nur die eigene Datei (erkennbar an Tampermonkey und tampermonkey-*.xpi)
+' wird geloescht, eine fremde policies.json bleibt unberuehrt. Tampermonkey und das Benutzerskript bietet
+' jetzt MOReiter bei Bedarf zur Installation an (Strg+Alt+B ohne Antwort des Skripts).
 Sub FirefoxTampermonkey()
- Dim Xpi$, FFVerz$, Pol$, Tmp$, Url$, Vz, Txt$, fnr%
+ Dim FFVerz$, Pol$, Vz, Txt$, fnr%
  On Error GoTo fehler
  Call SetProgV
- Xpi = Dir(vVerz & "neu\tampermonkey-*.xpi")
- If LenB(Xpi) = 0 Then Exit Sub
- Xpi = vVerz & "neu\" & Xpi
  For Each Vz In Array(ProgVerzO, ProgVerz)
-  If LenB(FFVerz) = 0 And LenB(CStr(Vz)) <> 0 Then
-   If FileExists(CStr(Vz) & "\Mozilla Firefox\firefox.exe") Then FFVerz = CStr(Vz) & "\Mozilla Firefox"
+  If LenB(CStr(Vz)) <> 0 Then
+   Pol = CStr(Vz) & "\Mozilla Firefox\distribution\policies.json"
+   If FileExists(Pol) Then
+    fnr = FreeFile
+    Open Pol For Input As #fnr
+    Txt = Input$(LOF(fnr), #fnr)
+    Close #fnr
+    If InStr(Txt, "firefox@tampermonkey.net") <> 0 And InStr(Txt, "tampermonkey-") <> 0 And InStr(Txt, "ExtensionSettings") <> 0 Then
+     On Error Resume Next
+     FSO.DeleteFile Pol, True
+     On Error GoTo fehler
+     ' das Programmverzeichnis ist nur mit Adminrechten beschreibbar
+     If FileExists(Pol) Then rufauf "cmd", "/e:on /c del /f """ & Pol & """", 2, , , 0
+    End If
+   End If
   End If
  Next Vz
- If LenB(FFVerz) = 0 Then Exit Sub
- Pol = FFVerz & "\distribution\policies.json"
- If FileExists(Pol) Then Exit Sub
- ' file:-Adresse: Laufwerk -> file:///v:/..., UNC -> file://server/...
- If Left$(Xpi, 2) = "\\" Then Url = "file:" & Replace(Xpi, "\", "/") Else Url = "file:///" & Replace(Xpi, "\", "/")
- Txt = "{" & vbCrLf & "  ""policies"": {" & vbCrLf & "    ""ExtensionSettings"": {" & vbCrLf _
-     & "      ""firefox@tampermonkey.net"": {" & vbCrLf _
-     & "        ""installation_mode"": ""normal_installed""," & vbCrLf _
-     & "        ""install_url"": """ & Url & """" & vbCrLf _
-     & "      }" & vbCrLf & "    }" & vbCrLf & "  }" & vbCrLf & "}" & vbCrLf
- ' nicht im Benutzerprofil, dort legt KopDat seine Zwischenkopie gleichen Namens an
- Tmp = Environ("temp") & "\policies.json"
- fnr = FreeFile
- Open Tmp For Output As #fnr
- Print #fnr, Txt;
- Close #fnr
- ' das Programmverzeichnis ist nur mit Adminrechten beschreibbar
- If Not FSO.FolderExists(FFVerz & "\distribution") Then rufauf "cmd", "/e:on /c md """ & FFVerz & "\distribution""", 2, , , 0
- Call KopDat(Tmp, FFVerz & "\distribution\")
- On Error Resume Next
- Kill Tmp
  Exit Sub
 fehler:
 Select Case MsgBox("FNr: " + CStr(Err.Number) + vbCrLf + "LastDLLError: " + CStr(Err.LastDllError) + vbCrLf + "Source: " + IIf(IsNull(Err.Source), "", CStr(Err.Source)) + vbCrLf + "Description: " + Err.Description + vbCrLf + "Fehlerposition: " + CStr(FPos), vbAbortRetryIgnore, "Aufgefangener Fehler in FirefoxTampermonkey/" + App.Path)
