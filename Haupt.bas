@@ -3685,8 +3685,11 @@ Sub MOReiterStarten() ' MOReiter (Strg+Alt+K/L: Reiter Kartei/Krankenblatt in Me
  Call SetProgV
  Netz = EigDatDirekt & "\Programmierung\MOReiter\MOReiter.exe"
  ' 27.9.26: AppVerz statt ProgVerz, der Ordner in %programfiles(x86)% liess sich auf amd und anmh nicht anlegen
- LVerz = AppVerz & "\MOReiter"
+ ' 8.10.26: %appdata% statt AppVerz (= %localappdata%), damit die exe neben MOReiter.ini und der Hilfe liegt
+ LVerz = Environ("appdata") & "\MOReiter"
  Lokal = LVerz & "\MOReiter.exe"
+ Dim AltLokal$
+ AltLokal = Environ("localappdata") & "\MOReiter\MOReiter.exe"
  ' 27.9.26: vor der Verteilung von MOReiter den Startmenue-Link "KeePass 2 Praxis" durch den aus dem NetzVerbind-Verzeichnis ersetzen,
  ' bei jeder Abweichung (nicht nur wenn juenger), damit ein anderswo veraenderter Link wieder korrigiert wird
  Dim KPQ$, KPZ$
@@ -3711,13 +3714,21 @@ Sub MOReiterStarten() ' MOReiter (Strg+Alt+K/L: Reiter Kartei/Krankenblatt in Me
   If Not KPKop Then KPKop = (FSO.GetFile(KPQ).size <> FSO.GetFile(KPZ).size Or FSO.GetFile(KPQ).DateLastModified <> FSO.GetFile(KPZ).DateLastModified)
   If KPKop Then Call KopDat(KPQ, StartMenProg & "\") ' KopDat kopiert ab Vista mit Adminrechten
  End If
+ Call FirefoxTampermonkey
  If Not FileExists(Netz) Then Exit Sub
- If FileExists(Lokal) Then
-  ' eine laufende alte Version sperrt die Datei, also vor dem Kopieren beenden
-  If FSO.GetFile(Netz).DateLastModified > FSO.GetFile(Lokal).DateLastModified Then
-   Call GetProcessCollection(2, "moreiter.exe")
-   Sleep 500 ' bis Windows die Datei freigibt
-  End If
+ ' eine laufende alte Version sperrt die Datei (bzw. laeuft noch aus %localappdata%), also vor dem Kopieren beenden
+ Dim Beenden%
+ Beenden = Not FileExists(Lokal)
+ If Not Beenden Then Beenden = (FSO.GetFile(Netz).DateLastModified > FSO.GetFile(Lokal).DateLastModified)
+ If Beenden Then
+  Call GetProcessCollection(2, "moreiter.exe")
+  Sleep 500 ' bis Windows die Datei freigibt
+ End If
+ ' 8.10.26: die fruehere Kopie in %localappdata% entfernen, damit nicht zwei Fassungen herumliegen
+ If FileExists(AltLokal) Then
+  On Error Resume Next
+  FSO.DeleteFile AltLokal, True
+  On Error GoTo fehler
  End If
  Call VerzPrüf(LVerz)
  Call KWn("MOReiter.exe", EigDatDirekt & "\Programmierung\MOReiter", LVerz)
@@ -3733,6 +3744,53 @@ Select Case MsgBox("FNr: " + CStr(Err.Number) + vbCrLf + "LastDLLError: " + CStr
  Case vbIgnore: Call MsgBox("Setze fort"): Resume Next
 End Select
 End Sub ' MOReiterStarten
+
+' 8.10.26: Firefox-Add-on Tampermonkey (fuer MOReiter Strg+Alt+B, Laborbefunde) ueber eine Unternehmensrichtlinie
+' installieren: legt im Firefox-Programmverzeichnis distribution\policies.json an, die das Add-on aus
+' v:\neu\tampermonkey-*.xpi beim naechsten Firefox-Start fuer alle Benutzer einrichtet (abschaltbar, nicht entfernbar).
+' Eine schon vorhandene policies.json ohne Tampermonkey bleibt unberuehrt (koennte andere Richtlinien enthalten).
+' Das Benutzerskript selbst installiert MOReiter bei Bedarf (oeffnet seine Installationsseite in Tampermonkey).
+Sub FirefoxTampermonkey()
+ Dim Xpi$, FFVerz$, Pol$, Tmp$, Url$, Vz, Txt$, fnr%
+ On Error GoTo fehler
+ Call SetProgV
+ Xpi = Dir(vVerz & "neu\tampermonkey-*.xpi")
+ If LenB(Xpi) = 0 Then Exit Sub
+ Xpi = vVerz & "neu\" & Xpi
+ For Each Vz In Array(ProgVerzO, ProgVerz)
+  If LenB(FFVerz) = 0 And LenB(CStr(Vz)) <> 0 Then
+   If FileExists(CStr(Vz) & "\Mozilla Firefox\firefox.exe") Then FFVerz = CStr(Vz) & "\Mozilla Firefox"
+  End If
+ Next Vz
+ If LenB(FFVerz) = 0 Then Exit Sub
+ Pol = FFVerz & "\distribution\policies.json"
+ If FileExists(Pol) Then Exit Sub
+ ' file:-Adresse: Laufwerk -> file:///v:/..., UNC -> file://server/...
+ If Left$(Xpi, 2) = "\\" Then Url = "file:" & Replace(Xpi, "\", "/") Else Url = "file:///" & Replace(Xpi, "\", "/")
+ Txt = "{" & vbCrLf & "  ""policies"": {" & vbCrLf & "    ""ExtensionSettings"": {" & vbCrLf _
+     & "      ""firefox@tampermonkey.net"": {" & vbCrLf _
+     & "        ""installation_mode"": ""normal_installed""," & vbCrLf _
+     & "        ""install_url"": """ & Url & """" & vbCrLf _
+     & "      }" & vbCrLf & "    }" & vbCrLf & "  }" & vbCrLf & "}" & vbCrLf
+ ' nicht im Benutzerprofil, dort legt KopDat seine Zwischenkopie gleichen Namens an
+ Tmp = Environ("temp") & "\policies.json"
+ fnr = FreeFile
+ Open Tmp For Output As #fnr
+ Print #fnr, Txt;
+ Close #fnr
+ ' das Programmverzeichnis ist nur mit Adminrechten beschreibbar
+ If Not FSO.FolderExists(FFVerz & "\distribution") Then rufauf "cmd", "/e:on /c md """ & FFVerz & "\distribution""", 2, , , 0
+ Call KopDat(Tmp, FFVerz & "\distribution\")
+ On Error Resume Next
+ Kill Tmp
+ Exit Sub
+fehler:
+Select Case MsgBox("FNr: " + CStr(Err.Number) + vbCrLf + "LastDLLError: " + CStr(Err.LastDllError) + vbCrLf + "Source: " + IIf(IsNull(Err.Source), "", CStr(Err.Source)) + vbCrLf + "Description: " + Err.Description + vbCrLf + "Fehlerposition: " + CStr(FPos), vbAbortRetryIgnore, "Aufgefangener Fehler in FirefoxTampermonkey/" + App.Path)
+ Case vbAbort: Call MsgBox("Höre auf"): ProgEnde
+ Case vbRetry: Call MsgBox("Versuche nochmal"): Resume
+ Case vbIgnore: Call MsgBox("Setze fort"): Resume Next
+End Select
+End Sub ' FirefoxTampermonkey
 
 Sub KWnK(D$, U$) ' Kopiere wenn neuer konstant
  On Error GoTo fehler
