@@ -3737,6 +3737,9 @@ Sub MOReiterStarten() ' MOReiter (Strg+Alt+K/L: Reiter Kartei/Krankenblatt in Me
  ' %appdata%\MOReiter\MOReiter.ini fehlen, so dass Kalibrierungen am einzelnen PC erhalten bleiben
  ' (frueher wurde MOReiter.ini selbst ueberschrieben, sobald die Netzfassung neuer war)
  Call KWn("MOReiter-Vorgaben.ini", EigDatDirekt & "\Programmierung\MOReiter", LVerz)
+ ' 26.10.26: Einstellungen der Praxis (Kennungen, Ablage, was sie nutzt), seit MOReiter ein eigenes oeffentliches
+ ' Repo ist nicht mehr in den Vorgaben; gilt in MOReiter vor ihnen
+ If FileExists(EigDatDirekt & "\Programmierung\MOReiter\MOReiter-Praxis.ini") Then Call KWn("MOReiter-Praxis.ini", EigDatDirekt & "\Programmierung\MOReiter", LVerz)
  ' MOReiter beendet sich selbst, wenn es schon laeuft
  If FileExists(Lokal) Then rufauf Lokal, vNS, 0, LVerz, 0
  Exit Sub
