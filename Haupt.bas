@@ -2883,6 +2883,7 @@ Sub FcEnsureViewTemplate()
  Call FcIniSetKey(Inhalt, "MainPanel", "LeftDetailsProfile", "fc_default_view")
  Call FcIniSetKey(Inhalt, "MainPanel", "RightDetailsProfile", "fc_default_view")
  Call FcIniSetKey(Inhalt, "Form", "SortDirAlwaysOnEnd", "1") ' Dateien vor Ordnern
+ Call FcIniSetKey(Inhalt, "Form", "ShowHiddenFile", "1") ' versteckte Dateien anzeigen (4.11.26)
  Call FcIniSetKey(Inhalt, "FcDetailedViews", "1", "fc_default_view")
  Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "LoadShellTitle", "1")
  Call FcIniSetKey(Inhalt, "FcDetailedViews_fc_default_view", "Condition", "")
