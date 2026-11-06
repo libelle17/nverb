@@ -76,6 +76,8 @@ Const RDW_NOFRAME = &H800
 Declare Function RedrawWindow Lib "user32" (ByVal hwnd As Long, lprcUpdate As cRECT, ByVal hrgnUpdate As Long, ByVal fuRedraw As Long) As Long
 Declare Function UpdateWindow Lib "user32" (ByVal hwnd As Long) As Long
 Public Const FcExePfad$ = "C:\Program Files (x86)\FreeCommander XE\FreeCommander.exe"
+' 6.11.26: Hilfsprogramme, die die von hier geoeffneten Fenster nach einer Stunde schliessen (s. FensterWaechter)
+Public Const FCAufrufExe$ = "C:\Program Files (x86)\FCAufruf.exe", ExpAufrufExe$ = "C:\Program Files (x86)\Expaufruf.exe"
 Public Const FcSetupExe$ = "\\linux1\daten\down\FreeCommanderXE-32_setup.exe"
 'Public WMIreg As SWbemObjectEx ' %windir%\system32\wbem\wbemdisp.tlb
 Public FPos& ' Fehlerposition
@@ -2256,6 +2258,10 @@ Sub Main()
   Call OeffneDualPane(Mid$(pzArg, 12))
   Exit Sub
  End If
+ If LCase$(left$(pzArg, 11)) = "oeffneverz:" Then
+  Call OeffneVerz(Mid$(pzArg, 12))
+  Exit Sub
+ End If
 ' aktfi.Show
  If True Then
 ' Do While True
@@ -2266,7 +2272,7 @@ Sub Main()
  Call cReg.WriteKey("Open Folder Protocol", "", "SOFTWARE\Classes\oeffneverz", HKEY_LOCAL_MACHINE)
  Call cReg.WriteKey(" ", "URL Protocol", "SOFTWARE\Classes\oeffneverz", HKEY_LOCAL_MACHINE)
  Call cReg.WriteKey("Open Folder", "", "SOFTWARE\Classes\oeffneverz\shell\open", HKEY_LOCAL_MACHINE)
- Call cReg.WriteKey("cmd /c set url=%1 & call set url=%%url:oeffneverz:=%% & call start explorer p:\dok\%%url%%", "", "SOFTWARE\Classes\oeffneverz\shell\open\command", HKEY_LOCAL_MACHINE)
+ Call cReg.WriteKey(Chr$(34) & App.Path & "\NVerb.exe" & Chr$(34) & " " & Chr$(34) & "%1" & Chr$(34), "", "SOFTWARE\Classes\oeffneverz\shell\open\command", HKEY_LOCAL_MACHINE)
  ' Schluessel, um vom PLZ aus per Alt+T den FreeCommander (P:\ links, P:\dok\<Pat_id> rechts) zu oeffnen
  Call cReg.WriteKey("Open Dual Pane Protocol", "", "SOFTWARE\Classes\oeffnedual", HKEY_LOCAL_MACHINE)
  Call cReg.WriteKey(" ", "URL Protocol", "SOFTWARE\Classes\oeffnedual", HKEY_LOCAL_MACHINE)
@@ -2697,6 +2703,57 @@ fehler:
  End Select
 End Sub ' Main
 
+' 6.11.26: uebergibt das von NVerb geoeffnete Fenster (Prozess bzw. Fensternummer) an den Waechter im Hilfsprogramm, der es
+' nach einer Stunde schliesst (s. FensterZu.bas in FCAufruf und ExpAufruf). Aeltere Fassungen kennen "/waechter" nicht und
+' oeffnen stattdessen den Patienten aus turbcust.gdt, deshalb nur mit einer Exe ab diesem Datum; sonst bleibt das Fenster offen.
+Sub FensterWaechter(Exe$, ByVal id&)
+ On Error GoTo ende
+ If id = 0 Then Exit Sub
+ If FileDateTime(Exe) < #11/6/2026# Then Exit Sub
+ Call Shell(Chr$(34) & Exe & Chr$(34) & " /waechter " & id, vbHide)
+ende:
+End Sub ' FensterWaechter
+
+' 6.11.26: Aufruf per oeffneverz:<Pat_id> (Strg+Alt+D im Laufzettel): Explorer mit dem Dokumentenordner des Patienten.
+' Nur Ziffern werden uebernommen: der Link kann aus jeder Webseite kommen
+Sub OeffneVerz(param$)
+ Const svz$ = "P:\dok\", asvz$ = "\\linux1\daten\Patientendokumente\dok\"
+ Dim i%, patId$, uvz$, alt$, h&, gew&
+ On Error GoTo fehler3
+ For i = 1 To Len(param)
+  If Mid$(param, i, 1) Like "#" Then patId = patId & Mid$(param, i, 1) Else Exit For
+ Next i
+ If Len(patId) = 0 Then Exit Sub
+ uvz = svz & patId & "\"
+ If Dir$(uvz, vbDirectory) = "" Then uvz = asvz & patId & "\"
+ If Dir$(uvz, vbDirectory) = "" Then
+  Call MsgBox("Archivordner '" & uvz & "' fuer Pat. " & patId & " (noch) nicht gefunden.")
+  Exit Sub
+ End If
+ alt = "|"
+ h = FindWindowEx(0, 0, "CabinetWClass", vbNullString)
+ Do While h <> 0
+  alt = alt & h & "|"
+  h = FindWindowEx(0, h, "CabinetWClass", vbNullString)
+ Loop
+ Call Shell("c:\windows\explorer.exe " & Chr$(34) & uvz & Chr$(34), vbNormalFocus)
+ Do ' bis 15 s auf das neue Fenster warten
+  h = FindWindowEx(0, 0, "CabinetWClass", vbNullString)
+  Do While h <> 0
+   If InStr(alt, "|" & h & "|") = 0 Then
+    Call FensterWaechter(ExpAufrufExe, h)
+    Exit Sub
+   End If
+   h = FindWindowEx(0, h, "CabinetWClass", vbNullString)
+  Loop
+  Sleep 200
+  gew = gew + 200
+ Loop While gew < 15000
+ Exit Sub
+fehler3:
+ Call MsgBox("Fehler beim Oeffnen des Dokumentenordners: " & Err.Description)
+End Sub ' OeffneVerz
+
 ' Wird beim Aufruf per oeffnedual:<Pat_id>,<Nachname, %XX-ANSI-kodiert> gestartet (Alt+I im Laufzettel; Alt+T bleibt bei oeffneverz/Explorer).
 ' Setzt den Namensfilter des FreeCommander und startet ihn mit P:\ links, P:\dok\<Pat_id> rechts.
 Sub OeffneDualPane(param$)
@@ -2714,7 +2771,7 @@ Sub OeffneDualPane(param$)
  Call FcSetPatFilterIncludeMask(nachname)
  Dim fcCmd$
  fcCmd = Chr$(34) & FcExePfad & Chr$(34) & " /N /L=" & Chr$(34) & "P:\" & Chr$(34) & " /R=" & Chr$(34) & "P:\dok\" & patId & Chr$(34)
- Call Shell(fcCmd, vbNormalFocus)
+ Call FensterWaechter(FCAufrufExe, Shell(fcCmd, vbNormalFocus))
  Exit Sub
 fehler2:
  Call MsgBox("Fehler beim öffnen des Dateimanagers: " & Err.Description)
